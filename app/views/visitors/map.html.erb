@@ -6,13 +6,51 @@
 
 <script type="text/javascript">
   $(function() {
+    latitude = $('#latitude') ? $('#latitude').val() : null ;
+    longitude = $('#longitude') ? $('#longitude').val() : null;
+
+    // Generate Google Map
+    var location_latlng;
+    if (latitude != null && longitude != null) {
+      location_latlng = new google.maps.LatLng(latitude, longitude)  
+    } else {
+      location_latlng = new google.maps.LatLng(40, -75);
+    }
+    
     mapCanvas = $('#map')[0];
     mapOptions = {
-      center: new google.maps.LatLng(50, 100),
-      zoom: 10,
+      center: location_latlng,
+      zoom: 15,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     };
-
     map = new google.maps.Map(mapCanvas, mapOptions);
+
+    // Create Location Mark
+    if (latitude != null && longitude != null) {
+      address = "";
+      geocoder.geocode({'latLng': location_latlng}, function(results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          address = results[0].formatted_address;
+        } else {
+          address = latitude + ", " + longitude;
+        }
+
+        show_info_window(address);
+      });
+
+      marker = new google.maps.Marker({
+        position: location_latlng,
+        map: map,
+      });
+
+    }
+
+    var show_info_window = function(address) {
+      infowindow = new google.maps.InfoWindow({
+        content: address
+      });
+
+      infowindow.open(map, marker);
+    }
   })
 </script>
