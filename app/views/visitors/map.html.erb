@@ -1,0 +1,18 @@
+<div id="map" class="map"></div>
+<% unless @location.nil? %>
+  <%= hidden_field_tag :longitude, @location.longitude %>
+  <%= hidden_field_tag :latitude, @location.latitude %>
+<% end %>
+
+<script type="text/javascript">
+  $(function() {
+    mapCanvas = $('#map')[0];
+    mapOptions = {
+      center: new google.maps.LatLng(50, 100),
+      zoom: 10,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+
+    map = new google.maps.Map(mapCanvas, mapOptions);
+  })
+</script>
