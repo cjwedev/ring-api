@@ -46,6 +46,7 @@ gem 'rails-api'
 group :development, :test do
   gem 'pry-rails'
   gem 'pry-nav'
+  gem 'rubocop'
 end
 
 group :production do
