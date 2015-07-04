@@ -39,9 +39,11 @@ gem 'spring',        group: :development
 # gem 'debugger', group: [:development, :test]
 
 gem 'bootstrap-sass'
-gem 'figaro', '>= 1.0.0.rc1'
+gem 'figaro', git: 'git://github.com/laserlemon/figaro.git', branch: 'master'
 gem 'pg'
 gem 'rails-api'
+
+gem 'twilio-ruby'
 
 group :development, :test do
   gem 'pry-rails'
