@@ -1,6 +1,6 @@
 class VisitorsController < ApplicationController
   def map
-    @location = Location.find_by_device_id(params[:device_id])
+    @location = Location.where("device_id = ?", params[:device_id]).try(:first)
     puts "*" * 10
     puts "#{location.longitude}"
     puts "*" * 10
