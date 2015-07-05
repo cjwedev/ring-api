@@ -11,10 +11,14 @@ class API::V1::AlertsController  < ActionController::API
 
     @client = Twilio::REST::Client.new(ENV["TWILIO_ACCOUNT_SID"], ENV["TWILIO_AUTH_TOKEN"])
     failed_contacts = []
+    sms_message = "#{location.sender} needs your help now.\n" \
+                  "Emergency time: #{location.updated_at.strftime("%d-%m-%Y %H:%M:%S UTC")}\n" \
+                  "Click here to see location: " \
+                  "#{request.protocol}#{request.host}/location/#{alert_params[:device_id]}"
     contacts.each do |contact|
       begin
         message = @client.account.messages.create ({
-          :body => "#{location.sender} needs your help now. Emergency time: #{location.updated_at.strftime("%d-%m-%Y %H:%M:%S UTC")}",
+          :body => sms_message,
           :to => contact,
           :from => ENV["TWILIO_PHONE_FROM"]
         })
