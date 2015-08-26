@@ -18,8 +18,8 @@ ActiveRecord::Schema.define(version: 20150704214432) do
 
   create_table "locations", force: true do |t|
     t.string   "device_id"
-    t.string   "longitude"
-    t.string   "latitude"
+    t.float    "longitude"
+    t.float    "latitude"
     t.string   "message"
     t.string   "contacts"
     t.datetime "created_at"

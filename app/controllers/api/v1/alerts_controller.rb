@@ -1,13 +1,13 @@
 class API::V1::AlertsController  < ActionController::API
   def create
     alert_params = permit_alert_params
-    if alert_params[:contacts].present?
-      alert_params[:contacts] = alert_params[:contacts].join(",")
-    end
+    # if alert_params[:contacts].present?
+    #   alert_params[:contacts] = alert_params[:contacts].join(",")
+    # end
 
     location = Location.where(:device_id => alert_params[:device_id]).first_or_create
     location.update_attributes alert_params
-    contacts = permit_alert_params[:contacts]
+    contacts = alert_params[:contacts].split(",")
 
     @client = Twilio::REST::Client.new(ENV["TWILIO_ACCOUNT_SID"], ENV["TWILIO_AUTH_TOKEN"])
     failed_contacts = []
@@ -33,7 +33,7 @@ class API::V1::AlertsController  < ActionController::API
       render json: { 
         :failure => true,
         :failed_contacts => failed_contacts.join(","),
-      }, status: :unprocessable_entity and return
+      }, status: :created and return
     end
 
     render json: { 
@@ -44,6 +44,6 @@ class API::V1::AlertsController  < ActionController::API
   private
 
   def permit_alert_params
-    params.permit(:device_id, :sender, :longitude, :latitude, :message, :contacts => [])
+    params.permit(:device_id, :sender, :longitude, :latitude, :message, :contacts)
   end
 end
