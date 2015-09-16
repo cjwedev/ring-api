@@ -9,6 +9,7 @@ class API::V1::AlertsController  < ActionController::API
 
     @client = Twilio::REST::Client.new(ENV["TWILIO_ACCOUNT_SID"], ENV["TWILIO_AUTH_TOKEN"])
     failed_contacts = []
+    success_contacts = []
     sms_message = "#{location.sender} needs your help now.\n" \
                   "Emergency time: #{location.updated_at.strftime("%d-%m-%Y %H:%M:%S UTC")}\n" \
                   "Click here to see location: " \
@@ -31,6 +32,8 @@ class API::V1::AlertsController  < ActionController::API
             :to => contact,
             :from => ENV["TWILIO_PHONE_FROM"]
           })
+
+          success_contacts << contact
         rescue Exception => e
           puts "*" * 40
           puts e.to_s
@@ -39,7 +42,7 @@ class API::V1::AlertsController  < ActionController::API
       end
     end
 
-    if failed_contacts.length < contacts.length
+    if success_contacts.length > 0
       location.update_attributes :last_sms => current_time
     end
 
@@ -50,7 +53,7 @@ class API::V1::AlertsController  < ActionController::API
       }, status: :created and return
     end
 
-    render json: { 
+    render json: {
       :success => true
     }, status: :created
   end
