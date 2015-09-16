@@ -1,9 +1,7 @@
 class API::V1::AlertsController  < ActionController::API
+  
   def create
     alert_params = permit_alert_params
-    # if alert_params[:contacts].present?
-    #   alert_params[:contacts] = alert_params[:contacts].join(",")
-    # end
 
     location = Location.where(:device_id => alert_params[:device_id]).first_or_create
     location.update_attributes alert_params
@@ -15,18 +13,34 @@ class API::V1::AlertsController  < ActionController::API
                   "Emergency time: #{location.updated_at.strftime("%d-%m-%Y %H:%M:%S UTC")}\n" \
                   "Click here to see location: " \
                   "#{request.protocol}#{request.host}/location/#{alert_params[:device_id]}"
-    contacts.each do |contact|
-      begin
-        message = @client.account.messages.create ({
-          :body => sms_message,
-          :to => contact,
-          :from => ENV["TWILIO_PHONE_FROM"]
-        })
-      rescue Exception => e
-        puts "*" * 40
-        puts e.to_s
-        failed_contacts << contact
+    
+    current_time = Time.new
+
+    # Calculate ellapsed time from last SMS
+    sms_available = true
+    if location.last_sms.present?
+      ellapsed = (current_time - location.last_sms) / 60
+      sms_available = false if ellapsed < 2
+    end
+
+    if sms_available
+      contacts.each do |contact|
+        begin
+          message = @client.account.messages.create ({
+            :body => sms_message,
+            :to => contact,
+            :from => ENV["TWILIO_PHONE_FROM"]
+          })
+        rescue Exception => e
+          puts "*" * 40
+          puts e.to_s
+          failed_contacts << contact
+        end
       end
+    end
+
+    if failed_contacts.length < contacts.length
+      location.update_attributes :last_sms => current_time
     end
 
     if failed_contacts.count > 0

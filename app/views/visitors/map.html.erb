@@ -2,6 +2,7 @@
 <% unless @location.nil? %>
   <%= hidden_field_tag :longitude, @location.longitude %>
   <%= hidden_field_tag :latitude, @location.latitude %>
+  <%= hidden_field_tag :device_id, @location.device_id %>
 <% end %>
 
 <script type="text/javascript">
@@ -25,31 +26,60 @@
     };
     map = new google.maps.Map(mapCanvas, mapOptions);
 
-    // Create Location Mark
-    if (latitude != null && longitude != null) {
-      address = "";
-      geocoder.geocode({'latLng': location_latlng}, function(results, status) {
-        if (status == google.maps.GeocoderStatus.OK) {
-          address = results[0].formatted_address;
-        } else {
-          address = latitude + ", " + longitude;
-        }
+    var marker, infowindow;
 
-        show_info_window(address);
-      });
-
-      marker = new google.maps.Marker({
-        position: location_latlng,
-        map: map,
-      });
-    }
-
+    // Show address tooltip
     var show_info_window = function(address) {
       infowindow = new google.maps.InfoWindow({
         content: address
       });
 
       infowindow.open(map, marker);
+    }
+
+    // Create Location Mark
+    var create_marker = function(latitude, longitude) {
+      if (marker != null) {
+        marker.setMap(null);
+      }
+
+      if (latitude != null && longitude != null) {
+        lat_long = new google.maps.LatLng(latitude, longitude);
+        address = "";
+        geocoder.geocode(
+          {'latLng': lat_long},
+          function(results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+            address = results[0].formatted_address;
+          } else {
+            address = latitude + ", " + longitude;
+          }
+
+          show_info_window(address);
+        });
+
+        marker = new google.maps.Marker({
+          position: lat_long,
+          map: map,
+        });
+
+        map.setCenter(lat_long);
+      }
+    }
+
+    create_marker(latitude, longitude);
+
+    // Update location with time period
+    setInterval(function() {update_location();}, 60000);
+    function update_location() {
+      $.ajax({
+        url: '/location_updated',
+        type: 'GET',
+        data: { device_id: $('#device_id').val() },
+        success: function(e) {
+          create_marker(e.latitude, e.longitude);
+        }
+      });
     }
   })
 </script>

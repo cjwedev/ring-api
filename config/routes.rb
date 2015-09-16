@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   # You can have the root of your site routed with "root"
   # root 'visitors#index'
   get '/location/:device_id', :to => 'visitors#map', :as => 'location'
+  get '/location_updated', :to => 'visitors#location_updated', :as => 'location_updated'
 
   namespace :api do
     namespace :v1 do
